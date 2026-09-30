@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Love Calculator</title>
+<style>
+  :root {
+    --bg: #fff0f5;
+    --card: #ffffff;
+    --text: #2a1a22;
+    --sub: #8a5a6a;
+    --pink: #ff4d7e;
+    --pink-dark: #d63566;
+    --track: #f2d7de;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a0e14;
+      --card: #2a1622;
+      --text: #ffe6ee;
+      --sub: #d19cb0;
+      --track: #4a2534;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a0e14;
+    --card: #2a1622;
+    --text: #ffe6ee;
+    --sub: #d19cb0;
+    --track: #4a2534;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    min-height: 100%;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 32px 24px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 12px 40px rgba(214, 53, 102, 0.15);
+    text-align: center;
+  }
+  h1 {
+    font-size: 1.5rem;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+  .sub {
+    color: var(--sub);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+  .field {
+    text-align: left;
+    margin-bottom: 14px;
+  }
+  label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--sub);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  input {
+    width: 100%;
+    padding: 13px 14px;
+    border-radius: 14px;
+    border: 1.5px solid var(--track);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus { border-color: var(--pink); }
+  button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    background: var(--pink);
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.15s;
+  }
+  button:active { transform: scale(0.97); background: var(--pink-dark); }
+
+  #result { display: none; margin-top: 26px; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+
+  .names {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .score-ring {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 16px;
+  }
+  .score-ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+  .score-ring circle {
+    fill: none;
+    stroke-width: 10;
+  }
+  .ring-bg { stroke: var(--track); }
+  .ring-fg {
+    stroke: var(--pink);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1);
+  }
+  .score-num {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--pink);
+  }
+  .msg {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    padding: 14px;
+    background: var(--bg);
+    border-radius: 14px;
+  }
+  .again {
+    margin-top: 14px;
+    background: transparent;
+    color: var(--pink);
+    border: 1.5px solid var(--pink);
+  }
+  .again:active { background: var(--track); }
+  .hearts {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .heart-fall {
+    position: absolute;
+    top: -10%;
+    font-size: 1.2rem;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(115vh) rotate(360deg); opacity: 0.2; }
+  }
+  .footer {
+    margin-top: 22px;
+    font-size: 0.75rem;
+    color: var(--sub);
+    letter-spacing: 0.05em;
+  }
+  .card { position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+<div class="hearts" id="hearts"></div>
+<div class="card">
+  <h1>💘 Love Calculator</h1>
+  <div class="sub">Enter two names, see the match %</div>
+
+  <div class="field">
+    <label>Your name</label>
+    <input id="name1" type="text" placeholder="e.g. Ramson" maxlength="30">
+  </div>
+  <div class="field">
+    <label>Their name (crush / partner)</label>
+    <input id="name2" type="text" placeholder="e.g. ..." maxlength="30">
+  </div>
+  <button onclick="calculate()">Calculate 💗</button>
+
+  <div id="result">
+    <div class="names" id="namesLine"></div>
+    <div class="score-ring">
+      <svg viewBox="0 0 140 140">
+        <circle class="ring-bg" cx="70" cy="70" r="60"></circle>
+        <circle class="ring-fg" id="ringFg" cx="70" cy="70" r="60"
+          stroke-dasharray="377" stroke-dashoffset="377"></circle>
+      </svg>
+      <div class="score-num" id="scoreNum">0%</div>
+    </div>
+    <div class="msg" id="msgText"></div>
+    <button class="again" onclick="reset()">Try Another 🔄</button>
+  </div>
+
+  <div class="footer">by BUDDY 😈</div>
+</div>
+
+<script>
+const MESSAGES = [
+  [0, 20,  "💀 Go back to the drawing board, this ain't love it's a habit."],
+  [20, 40, "😬 Something's missing... maybe the chemistry just isn't there."],
+  [40, 60, "🤔 It could work, but you'll both have to put in real effort."],
+  [60, 75, "😊 Nice! There are some solid vibes here."],
+  [75, 90, "🔥 Whoa, this is serious! You two really click."],
+  [90, 101,"💍 SOULMATES! Go propose right now, what are you waiting for."]
+];
+
+// simple deterministic hash so same names = same score every time
+function hashScore(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return h % 101;
+}
+
+function calculate() {
+  const n1 = document.getElementById('name1').value.trim();
+  const n2 = document.getElementById('name2').value.trim();
+  if (!n1 || !n2) {
+    alert("Enter both names buddy 😅");
+    return;
+  }
+  const combo = (n1 + n2).toLowerCase().replace(/\s/g, '').split('').sort().join('');
+  const score = hashScore(combo);
+
+  document.getElementById('namesLine').textContent = `${n1}  ❤️  ${n2}`;
+  document.getElementById('scoreNum').textContent = score + '%';
+
+  const circumference = 377;
+  const offset = circumference - (circumference * score / 100);
+  const ring = document.getElementById('ringFg');
+  ring.style.strokeDashoffset = circumference;
+  setTimeout(() => { ring.style.strokeDashoffset = offset; }, 50);
+
+  let msg = "❓";
+  for (const [lo, hi, m] of MESSAGES) {
+    if (score >= lo && score < hi) { msg = m; break; }
+  }
+  document.getElementById('msgText').textContent = msg;
+  document.getElementById('result').style.display = 'block';
+
+  if (score >= 60) burstHearts();
+}
+
+function reset() {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('name1').value = '';
+  document.getElementById('name2').value = '';
+  document.getElementById('name1').focus();
+}
+
+function burstHearts() {
+  const container = document.getElementById('hearts');
+  const emojis = ['❤️','💕','💖','💗'];
+  for (let i = 0; i < 18; i++) {
+    const h = document.createElement('div');
+    h.className = 'heart-fall';
+    h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.animationDuration = (3 + Math.random() * 2) + 's';
+    h.style.fontSize = (1 + Math.random() * 1.2) + 'rem';
+    container.appendChild(h);
+    setTimeout(() => h.remove(), 5500);
+  }
+}
+</script>
+</body>
+</html>
